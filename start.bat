@@ -8,18 +8,13 @@ echo ║     🚀 AI SUPPORT TICKET SYSTEM - LAUNCHER            ║
 echo ╚════════════════════════════════════════════════════════╝
 echo.
 
-:: Step 1: Check if we're in the right folder
-if not exist ".\venv\" (
-    echo ❌ ERROR: Cannot find virtual environment!
-    echo    Make sure you're in: C:\Users\mulla\OneDrive\Desktop\ai-support-system
-    echo    Current folder: %CD%
-    pause
-    exit
-)
+:: Step 1: Show current folder
+echo 📍 Current folder: %CD%
+echo.
 
 :: Step 2: Activate virtual environment
-echo 📦 [1/3] Activating virtual environment...
-call .\venv\Scripts\activate.bat
+echo 📦 [1/3] Activating virtual environment (.venv)...
+call ".\.venv\Scripts\activate.bat"
 
 :: Step 3: Go to backend folder
 echo 📂 [2/3] Moving to backend folder...
@@ -29,28 +24,20 @@ cd backend
 echo ✅ [3/3] Ready to work!
 echo.
 echo ╔════════════════════════════════════════════════════════╗
-echo ║  🎯 YOU ARE NOW IN THE RIGHT PLACE!                   ║
+echo ║  🎯 YOU ARE NOW READY!                                ║
 echo ╠════════════════════════════════════════════════════════╣
 echo ║  📍 Location: backend folder                          ║
-echo ║  🔧 Virtual Env: ACTIVE                               ║
-echo ║  📦 Python: Using venv Python                         ║
+echo ║  🔧 Virtual Env: .venv (ACTIVE)                       ║
+echo ║  🌐 Live URL: roshanmulla-ai-support-system-final.hf.space ║
 echo ╚════════════════════════════════════════════════════════╝
 echo.
 echo ╔════════════════════════════════════════════════════════╗
-echo ║  🚀 COMMANDS YOU CAN RUN NOW:                         ║
+echo ║  🚀 COMMANDS:                                         ║
 echo ╠════════════════════════════════════════════════════════╣
-echo ║  ▶ python main.py    - START THE SERVER               ║
-echo ║  ▶ git status        - Check git status               ║
-echo ║  ▶ pip list          - See all packages               ║
-echo ║  ▶ deactivate        - Exit virtual env               ║
-echo ║  ▶ exit              - Close this window              ║
+echo ║  ▶ python main.py    - START SERVER                   ║
+echo ║  ▶ pip list          - See packages                   ║
+echo ║  ▶ deactivate        - Exit venv                      ║
 echo ╚════════════════════════════════════════════════════════╝
-echo.
-echo 🌐 LIVE URL: https://roshanmulla-ai-support-system-final.hf.space
-echo.
-echo ══════════════════════════════════════════════════════════
-echo ✅ Type "python main.py" and press Enter to start!
-echo ══════════════════════════════════════════════════════════
 echo.
 
 cmd /k
