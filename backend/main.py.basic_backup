@@ -1,0 +1,18 @@
+from fastapi import FastAPI
+import uvicorn
+
+app = FastAPI(title="AutoResolve AI - Phase 3")
+
+@app.get("/")
+def root():
+    return {"message": "Server working!", "status": "success"}
+
+@app.get("/test")
+def test():
+    return {"success": True, "message": "Basic API working"}
+
+if __name__ == "__main__":
+    print("="*50)
+    print("🚀 Testing Basic Server")
+    print("="*50)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
