@@ -1,56 +1,106 @@
-@echo off
-title AI SUPPORT TICKET SYSTEM
-color 0A
-cls
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+*.so
+.Python
 
-echo ╔════════════════════════════════════════════════════════╗
-echo ║     🚀 AI SUPPORT TICKET SYSTEM - LAUNCHER            ║
-echo ╚════════════════════════════════════════════════════════╝
-echo.
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+venv310/
+venv311/
+venv*/
 
-:: Step 1: Check if we're in the right folder
-if not exist ".\venv\" (
-    echo ❌ ERROR: Cannot find virtual environment!
-    echo    Make sure you're in: C:\Users\mulla\OneDrive\Desktop\ai-support-system
-    echo    Current folder: %CD%
-    pause
-    exit
-)
+# Environment variables - CRITICAL for security!
+.env
+*.env
+.env.*
+!.env.example
 
-:: Step 2: Activate virtual environment
-echo 📦 [1/3] Activating virtual environment...
-call .\venv\Scripts\activate.bat
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+backups/
+*.db.backup
 
-:: Step 3: Go to backend folder
-echo 📂 [2/3] Moving to backend folder...
-cd backend
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
 
-:: Step 4: Show success
-echo ✅ [3/3] Ready to work!
-echo.
-echo ╔════════════════════════════════════════════════════════╗
-echo ║  🎯 YOU ARE NOW IN THE RIGHT PLACE!                   ║
-echo ╠════════════════════════════════════════════════════════╣
-echo ║  📍 Location: backend folder                          ║
-echo ║  🔧 Virtual Env: ACTIVE                               ║
-echo ║  📦 Python: Using venv Python                         ║
-echo ╚════════════════════════════════════════════════════════╝
-echo.
-echo ╔════════════════════════════════════════════════════════╗
-echo ║  🚀 COMMANDS YOU CAN RUN NOW:                         ║
-echo ╠════════════════════════════════════════════════════════╣
-echo ║  ▶ python main.py    - START THE SERVER               ║
-echo ║  ▶ git status        - Check git status               ║
-echo ║  ▶ pip list          - See all packages               ║
-echo ║  ▶ deactivate        - Exit virtual env               ║
-echo ║  ▶ exit              - Close this window              ║
-echo ╚════════════════════════════════════════════════════════╝
-echo.
-echo 🌐 LIVE URL: https://roshanmulla-ai-support-system-final.hf.space
-echo.
-echo ══════════════════════════════════════════════════════════
-echo ✅ Type "python main.py" and press Enter to start!
-echo ══════════════════════════════════════════════════════════
-echo.
+# Python distribution
+dist/
+build/
+*.egg-info/
+*.egg
 
-cmd /k
+# Project specific
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# Logs
+logs/
+*.log
+*.pid
+
+# Uploads
+uploads/
+media/
+staticfiles/
+
+# Docker
+*.pid
+Dockerfile.dockerignore
+.dockerignore
+
+# Backup files
+*.bak
+*.backup
+
+# Test files
+test_*.py
+tests/__pycache__/
+*.pytest_cache
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# API Keys and Secrets
+*.key
+*.pem
+*.crt
+secrets/
+
+# Hugging Face specific
+.hf/
+.huggingface/
+
+# VS Code workspace
+*.code-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
