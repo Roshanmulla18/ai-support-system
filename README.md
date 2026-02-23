@@ -14,7 +14,7 @@ An AI-powered helpdesk system that automatically classifies, prioritizes, and re
 
 
 
-\*\*🔴 Live Demo:\*\* \[https://roshanmulla-ai-support-system-final.hf.space](https://roshanmulla-ai-support-system-final.hf.space)
+\*\*🔴 Live Demo:https://roshanmulla-ai-support-system-final.hf.space/docs
 
 
 
