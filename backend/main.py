@@ -165,6 +165,11 @@ def root():
             "POST /login": "Login and get JWT token",
             "GET /users/me": "Get current user (protected)",
             "PUT /users/me": "Update current user (protected)",
+            "POST /tickets": "Create new ticket (protected)",
+            "GET /tickets": "List tickets (protected, role-based)",
+            "GET /tickets/{ticket_id}": "Get ticket details (protected)",
+            "PUT /tickets/{ticket_id}": "Update ticket (protected)",
+            "DELETE /tickets/{ticket_id}": "Delete ticket - admin only",
             "GET /docs": "API documentation"
         }
     }
@@ -370,22 +375,258 @@ def update_user_me(
         "created_at": current_user.created_at.isoformat() if current_user.created_at else None
     }
 
+# ========== TICKET ENDPOINTS (PHASE 4) ==========
+
+# Helper function to convert Ticket object to response dict
+def ticket_to_response(ticket: models.Ticket) -> dict:
+    """Convert SQLAlchemy Ticket object to response dictionary"""
+    return {
+        "id": ticket.id,
+        "title": ticket.title,
+        "description": ticket.description,
+        "status": ticket.status,
+        "priority": ticket.priority,
+        "user_id": ticket.user_id,
+        "assigned_to": ticket.assigned_to,
+        "ai_category": ticket.ai_category,
+        "ai_confidence": ticket.ai_confidence,
+        "sentiment_score": ticket.sentiment_score,
+        "ai_suggested_response": ticket.ai_suggested_response,
+        "resolved_by_ai": ticket.resolved_by_ai,
+        "created_at": ticket.created_at.isoformat() if ticket.created_at else None,
+        "updated_at": ticket.updated_at.isoformat() if ticket.updated_at else None
+    }
+
+@app.post("/tickets", response_model=dict, status_code=201)
+def create_ticket(
+    ticket: schemas.TicketCreate,
+    db: Session = Depends(database.get_db),
+    current_user = Depends(auth.get_current_active_user)
+):
+    """
+    Create a new support ticket
+    
+    - **title**: Ticket title (max 200 chars)
+    - **description**: Detailed problem description (max 5000 chars)
+    - **priority**: low, medium (default), high, or urgent
+    """
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    # Create new ticket with current user as creator
+    db_ticket = models.Ticket(
+        title=ticket.title,
+        description=ticket.description,
+        priority=ticket.priority,
+        status="open",
+        user_id=current_user.id
+    )
+    
+    db.add(db_ticket)
+    db.commit()
+    db.refresh(db_ticket)
+    
+    return ticket_to_response(db_ticket)
+
+@app.get("/tickets", response_model=dict)
+def list_tickets(
+    skip: int = 0,
+    limit: int = 100,
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
+    db: Session = Depends(database.get_db),
+    current_user = Depends(auth.get_current_active_user)
+):
+    """
+    List all tickets with optional filtering
+    
+    - **Customers**: See only their own tickets
+    - **Agents/Admins**: See all tickets
+    - **Filters**: status (open, in_progress, resolved, closed), priority (low, medium, high, urgent)
+    """
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    query = db.query(models.Ticket)
+    
+    # Role-based access control
+    if current_user.role == "customer":
+        # Customers can only see their own tickets
+        query = query.filter(models.Ticket.user_id == current_user.id)
+    elif current_user.role not in ["agent", "admin"]:
+        # Unknown role
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Apply optional filters
+    if status:
+        if status not in ['open', 'in_progress', 'resolved', 'closed']:
+            raise HTTPException(status_code=400, detail="Invalid status filter")
+        query = query.filter(models.Ticket.status == status)
+    
+    if priority:
+        if priority not in ['low', 'medium', 'high', 'urgent']:
+            raise HTTPException(status_code=400, detail="Invalid priority filter")
+        query = query.filter(models.Ticket.priority == priority)
+    
+    # Get total count before pagination
+    total = query.count()
+    
+    # Apply pagination
+    tickets = query.offset(skip).limit(limit).all()
+    
+    return {
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "tickets": [ticket_to_response(t) for t in tickets]
+    }
+
+@app.get("/tickets/{ticket_id}", response_model=dict)
+def get_ticket(
+    ticket_id: int,
+    db: Session = Depends(database.get_db),
+    current_user = Depends(auth.get_current_active_user)
+):
+    """
+    Get a specific ticket by ID
+    
+    - **Customers**: Can only view their own tickets
+    - **Agents/Admins**: Can view any ticket
+    """
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    ticket = db.query(models.Ticket).filter(models.Ticket.id == ticket_id).first()
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    # Role-based access control
+    if current_user.role == "customer" and ticket.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    return ticket_to_response(ticket)
+
+@app.put("/tickets/{ticket_id}", response_model=dict)
+def update_ticket(
+    ticket_id: int,
+    ticket_update: schemas.TicketUpdate,
+    db: Session = Depends(database.get_db),
+    current_user = Depends(auth.get_current_active_user)
+):
+    """
+    Update a ticket
+    
+    - **Agents/Admins**: Can update status, priority, assigned_to, and AI fields
+    - **Customers**: Can update title and description only
+    """
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    ticket = db.query(models.Ticket).filter(models.Ticket.id == ticket_id).first()
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    # Check permissions
+    is_creator = ticket.user_id == current_user.id
+    is_agent_or_admin = current_user.role in ["agent", "admin"]
+    
+    if current_user.role == "customer" and not is_creator:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Customers can only update title and description
+    if current_user.role == "customer":
+        if ticket_update.title:
+            ticket.title = ticket_update.title
+        if ticket_update.description:
+            ticket.description = ticket_update.description
+    
+    # Agents and admins can update status, priority, and assignment
+    if is_agent_or_admin:
+        if ticket_update.title:
+            ticket.title = ticket_update.title
+        if ticket_update.description:
+            ticket.description = ticket_update.description
+        if ticket_update.status:
+            ticket.status = ticket_update.status
+        if ticket_update.priority:
+            ticket.priority = ticket_update.priority
+        
+        # Handle assignment to another agent/admin
+        if ticket_update.assigned_to is not None:
+            if ticket_update.assigned_to != 0:  # 0 means unassign
+                assigned_user = db.query(models.User).filter(
+                    models.User.id == ticket_update.assigned_to
+                ).first()
+                if not assigned_user:
+                    raise HTTPException(status_code=400, detail="Assigned user not found")
+                if assigned_user.role not in ["agent", "admin"]:
+                    raise HTTPException(status_code=400, detail="Can only assign to agents or admins")
+            ticket.assigned_to = ticket_update.assigned_to if ticket_update.assigned_to != 0 else None
+        
+        # Update AI-related fields
+        if ticket_update.ai_category is not None:
+            ticket.ai_category = ticket_update.ai_category
+        if ticket_update.ai_confidence is not None:
+            ticket.ai_confidence = ticket_update.ai_confidence
+        if ticket_update.sentiment_score is not None:
+            ticket.sentiment_score = ticket_update.sentiment_score
+        if ticket_update.ai_suggested_response is not None:
+            ticket.ai_suggested_response = ticket_update.ai_suggested_response
+        if ticket_update.resolved_by_ai is not None:
+            ticket.resolved_by_ai = ticket_update.resolved_by_ai
+    
+    db.commit()
+    db.refresh(ticket)
+    
+    return ticket_to_response(ticket)
+
+@app.delete("/tickets/{ticket_id}", status_code=204)
+def delete_ticket(
+    ticket_id: int,
+    db: Session = Depends(database.get_db),
+    current_user = Depends(auth.get_current_active_user)
+):
+    """
+    Delete a ticket (admin only)
+    
+    - Only platform admins can delete tickets
+    """
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can delete tickets")
+    
+    ticket = db.query(models.Ticket).filter(models.Ticket.id == ticket_id).first()
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    db.delete(ticket)
+    db.commit()
+    
+    return None
+
 # ========== RUN SERVER ==========
 if __name__ == "__main__":
     import uvicorn
     print("="*60)
-    print("🚀 AUTORESOLVE AI - PHASE 3 COMPLETE")
+    print("🚀 AUTORESOLVE AI - PHASE 4 COMPLETE")
     print("="*60)
-    print("✅ Registration with full validation")
-    print("✅ Login with JWT tokens")
-    print("✅ Protected routes")
-    print("✅ Case-insensitive email checking")
-    print("✅ Password hashing with bcrypt")
+    print("✅ Phase 3: Registration & Authentication")
+    print("✅ Phase 4: Ticket Management System (CRUD)")
     print("="*60)
     print("🌐 http://localhost:8001")
     print("📚 http://localhost:8001/docs")
     print("="*60)
-    print("🔑 Test login with registered user")
+    print("📋 New Ticket Endpoints:")
+    print("   POST   /tickets")
+    print("   GET    /tickets")
+    print("   GET    /tickets/{ticket_id}")
+    print("   PUT    /tickets/{ticket_id}")
+    print("   DELETE /tickets/{ticket_id}")
     print("="*60)
     
     uvicorn.run(app, host="0.0.0.0", port=8001)
