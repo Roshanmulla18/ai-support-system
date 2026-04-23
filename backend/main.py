@@ -28,9 +28,9 @@ load_dotenv()
 # Create tables
 try:
     models.Base.metadata.create_all(bind=database.engine)
-    print("✅ Tables created successfully")
+    print("[OK] Tables created successfully")
 except Exception as e:
-    print(f"❌ Error creating tables: {e}")
+    print(f"[ERROR] Error creating tables: {e}")
 
 app = FastAPI(
     title="AutoResolve AI",
@@ -613,15 +613,15 @@ def delete_ticket(
 if __name__ == "__main__":
     import uvicorn
     print("="*60)
-    print("🚀 AUTORESOLVE AI - PHASE 4 COMPLETE")
+    print("AUTORESOLVE AI - PHASE 4 COMPLETE")
     print("="*60)
-    print("✅ Phase 3: Registration & Authentication")
-    print("✅ Phase 4: Ticket Management System (CRUD)")
+    print("[OK] Phase 3: Registration & Authentication")
+    print("[OK] Phase 4: Ticket Management System (CRUD)")
     print("="*60)
-    print("🌐 http://localhost:8001")
-    print("📚 http://localhost:8001/docs")
+    print("Server: http://localhost:8001")
+    print("Docs:   http://localhost:8001/docs")
     print("="*60)
-    print("📋 New Ticket Endpoints:")
+    print("Ticket Endpoints:")
     print("   POST   /tickets")
     print("   GET    /tickets")
     print("   GET    /tickets/{ticket_id}")
