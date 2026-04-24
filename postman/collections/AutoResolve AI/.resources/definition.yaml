@@ -1,0 +1,10 @@
+$kind: collection
+name: AutoResolve AI
+description: Collection for the AutoResolve AI support ticket system API
+variables:
+  - key: baseUrl
+    value: 'http://localhost:8001'
+  - key: authToken
+    value: ''
+  - key: ticketId
+    value: '1'

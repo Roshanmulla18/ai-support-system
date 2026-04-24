@@ -1,0 +1,21 @@
+$kind: http-request
+name: Login
+method: POST
+url: '{{baseUrl}}/login'
+order: 2000
+body:
+  type: urlencoded
+  content:
+    - key: username
+      value: johndoe
+    - key: password
+      value: Password123
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const response = pm.response.json();
+      if (response.access_token) {
+          pm.collectionVariables.set("authToken", response.access_token);
+          console.log("Auth token saved:", response.access_token);
+      }

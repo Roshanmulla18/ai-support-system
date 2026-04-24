@@ -1,0 +1,15 @@
+$kind: http-request
+name: List Tickets
+method: GET
+url: '{{baseUrl}}/tickets'
+order: 2000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{authToken}}'
+queryParams:
+  - key: skip
+    value: '0'
+  - key: limit
+    value: '100'

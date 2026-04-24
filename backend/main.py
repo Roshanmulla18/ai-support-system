@@ -47,6 +47,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ========== STARTUP EVENT ==========
+@app.on_event("startup")
+async def startup_event():
+    print("\n" + "="*60)
+    print("🚀 AUTORESOLVE AI - PHASE 4 COMPLETE")
+    print("="*60)
+    print("✅ Phase 3: Registration & Authentication")
+    print("✅ Phase 4: Ticket Management System (CRUD)")
+    print("="*60)
+    print("Server: http://localhost:8002")
+    print("Docs:   http://localhost:8002/docs")
+    print("="*60)
+    print("Ticket Endpoints:")
+    print("   POST   /tickets")
+    print("   GET    /tickets")
+    print("   GET    /tickets/{ticket_id}")
+    print("   PUT    /tickets/{ticket_id}")
+    print("   DELETE /tickets/{ticket_id}")
+    print("="*60 + "\n")
+
 # ========== REQUEST/RESPONSE SCHEMAS ==========
 
 class UserCreate(BaseModel):
@@ -612,21 +632,4 @@ def delete_ticket(
 # ========== RUN SERVER ==========
 if __name__ == "__main__":
     import uvicorn
-    print("="*60)
-    print("AUTORESOLVE AI - PHASE 4 COMPLETE")
-    print("="*60)
-    print("[OK] Phase 3: Registration & Authentication")
-    print("[OK] Phase 4: Ticket Management System (CRUD)")
-    print("="*60)
-    print("Server: http://localhost:8001")
-    print("Docs:   http://localhost:8001/docs")
-    print("="*60)
-    print("Ticket Endpoints:")
-    print("   POST   /tickets")
-    print("   GET    /tickets")
-    print("   GET    /tickets/{ticket_id}")
-    print("   PUT    /tickets/{ticket_id}")
-    print("   DELETE /tickets/{ticket_id}")
-    print("="*60)
-    
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

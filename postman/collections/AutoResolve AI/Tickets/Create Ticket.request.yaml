@@ -1,0 +1,21 @@
+$kind: http-request
+name: Create Ticket
+method: POST
+url: '{{baseUrl}}/tickets'
+order: 1000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{authToken}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Issue with login",
+      "description": "I am unable to login to my account since yesterday.",
+      "priority": "high"
+    }
